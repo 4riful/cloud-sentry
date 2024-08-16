@@ -32,12 +32,12 @@ Cloud Sentry currently supports SNI IP ranges from these top cloud providers:
 
 2. **Make the Script Executable**:
    ```bash
-   chmod +x cloud-sentry.sh
+   chmod +x main.sh
    ```
 
 3. **Run the Script**:
    ```bash
-   ./cloud-sentry.sh
+   ./main.sh
    ```
 
 #### ⚡ Usage
