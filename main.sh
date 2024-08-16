@@ -16,6 +16,9 @@ echo -e "\033[1;32m
 🙌 Special thanks to the kaeferjaeger team for their amazing collective work and dedication!
 \033[0m"
 
+# File to store the last execution time
+LAST_EXECUTION_FILE="last_execution_time.txt"
+
 # Function to download files and compare sizes
 download_and_compare() {
     local name=$1
@@ -69,6 +72,24 @@ filter_domains() {
 
 # Main function to run the tool
 main() {
+    current_time=$(date +%s)
+
+    # Check if the last execution time file exists
+    if [[ -f "$LAST_EXECUTION_FILE" ]]; then
+        last_execution_time=$(cat "$LAST_EXECUTION_FILE")
+        time_diff=$(( (current_time - last_execution_time) / 60 ))
+
+        # If less than 60 minutes (1 hour), skip downloading
+        if [[ $time_diff -lt 60 ]]; then
+            echo -e "⏰ Last execution was less than 1 hour ago. Skipping download."
+            skip_download=true
+        else
+            skip_download=false
+        fi
+    else
+        skip_download=false
+    fi
+
     # Array of file names and URLs
     declare -A files
     files=(
@@ -80,9 +101,14 @@ main() {
     )
 
     # Download each file and compare sizes
-    for name in "${!files[@]}"; do
-        download_and_compare "$name" "${files[$name]}"
-    done
+    if [[ "$skip_download" == false ]]; then
+        for name in "${!files[@]}"; do
+            download_and_compare "$name" "${files[$name]}"
+        done
+    fi
+
+    # Update the last execution time
+    echo "$current_time" > "$LAST_EXECUTION_FILE"
 
     # Prompt user for domain input
     read -rp "Enter the domain to filter (e.g., .dell.com): " domain
