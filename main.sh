@@ -2,6 +2,9 @@
 
 # Cloud Sentry - Vigilant SNI Monitoring and Asset Enumeration
 
+# Clear the screen before running
+clear
+
 # ASCII Art Logo with Colors
 echo -e "\033[1;34m
 █▀▀ █░░ █▀█ █░█ █▀▄   █▀ █▀▀ █▄░█ ▀█▀ █▀█ █▄█
@@ -16,44 +19,62 @@ echo -e "\033[1;32m
 🙌 Special thanks to the kaeferjaeger team for their amazing collective work and dedication!
 \033[0m"
 
-# Directory to store output files
+# Directory to store downloaded files
+DOWNLOAD_DIR="sniranges"
 OUTPUT_DIR="output"
 
 # File to store the last execution time
 LAST_EXECUTION_FILE="${OUTPUT_DIR}/last_execution_time.txt"
 
-# Create output directory if it doesn't exist
-mkdir -p "$OUTPUT_DIR"
+# Create directories if they don't exist
+mkdir -p "$DOWNLOAD_DIR" "$OUTPUT_DIR"
 
-# Function to download files and compare sizes
+# Advanced download and comparison function
 download_and_compare() {
     local name=$1
     local url=$2
-    local new_file="${OUTPUT_DIR}/${name}_new.txt"
-    local old_file="${OUTPUT_DIR}/${name}.txt"
+    local new_file="${DOWNLOAD_DIR}/${name}_new.txt"
+    local old_file="${DOWNLOAD_DIR}/${name}.txt"
 
     echo -e "🚀  Downloading $name..."
-    
-    # Improved progress bar with sizes in KB
-    curl -o "$new_file" --progress-bar "$url" | while IFS= read -r progress; do
-        echo -ne "Downloading: $progress KB\r"
-    done
-    echo ""
 
-    if [[ -f "$old_file" ]]; then
-        old_size=$(stat -c%s "$old_file")
-        new_size=$(stat -c%s "$new_file")
+    # Attempt to download the file with retries
+    attempt=0
+    max_attempts=5
+    success=false
 
-        if [[ $new_size -ne $old_size ]]; then
-            mv "$new_file" "$old_file"
-            echo -e "✅  $name updated (size: $((new_size / 1024)) KB)"
+    while [[ $attempt -lt $max_attempts ]]; do
+        curl -o "$new_file" --progress-bar "$url"
+        if [[ $? -eq 0 ]]; then
+            success=true
+            break
         else
-            rm "$new_file"
-            echo -e "⚖️  $name already up-to-date (size: $((old_size / 1024)) KB)"
+            echo -e "⚠️  Download failed. Retrying in 5 seconds... (Attempt $((attempt+1))/$max_attempts)"
+            sleep 5
+        fi
+        attempt=$((attempt+1))
+    done
+
+    if [[ "$success" = true ]]; then
+        echo -e "📥  Download completed."
+
+        if [[ -f "$old_file" ]]; then
+            old_size=$(stat -c%s "$old_file")
+            new_size=$(stat -c%s "$new_file")
+
+            if [[ $new_size -ne $old_size ]]; then
+                mv "$new_file" "$old_file"
+                echo -e "✅  $name updated (size: $((new_size / 1024)) KB)"
+            else
+                rm "$new_file"
+                echo -e "⚖️  $name already up-to-date (size: $((old_size / 1024)) KB)"
+            fi
+        else
+            mv "$new_file" "$old_file"
+            echo -e "✅  $name downloaded (size: $(( $(stat -c%s "$old_file") / 1024 )) KB)"
         fi
     else
-        mv "$new_file" "$old_file"
-        echo -e "✅  $name downloaded (size: $(( $(stat -c%s "$old_file") / 1024 )) KB)"
+        echo -e "❌  Failed to download $name after $max_attempts attempts."
     fi
 }
 
@@ -65,7 +86,7 @@ filter_domains() {
     echo -e "🔍  Filtering for domain: $domain..."
     
     # Filtering logic
-    cat ${OUTPUT_DIR}/*.txt | grep -F "$domain" | awk -F'-- ' '{print $2}' | tr ' ' '\n' | tr '[' ' ' | sed 's/ //g' | sed 's/\]//g' | grep -F "$domain" | sort -u > "$output_file"
+    cat ${DOWNLOAD_DIR}/*.txt | grep -F "$domain" | awk -F'-- ' '{print $2}' | tr ' ' '\n' | tr '[' ' ' | sed 's/ //g' | sed 's/\]//g' | grep -F "$domain" | sort -u > "$output_file"
     
     local subdomain_count=$(wc -l < "$output_file")
     
@@ -85,9 +106,9 @@ main() {
         last_execution_time=$(cat "$LAST_EXECUTION_FILE")
         time_diff=$(( (current_time - last_execution_time) / 60 ))
 
-        # If less than 60 minutes (1 hour), skip downloading
-        if [[ $time_diff -lt 60 ]]; then
-            echo -e "⏰ Last execution was less than 1 hour ago. Skipping download."
+        # If less than 5 minutes, skip downloading
+        if [[ $time_diff -lt 5 ]]; then
+            echo -e "⏰ Last execution was less than 5 minutes ago. Skipping download."
             skip_download=true
         else
             skip_download=false
