@@ -16,15 +16,21 @@ echo -e "\033[1;32m
 🙌 Special thanks to the kaeferjaeger team for their amazing collective work and dedication!
 \033[0m"
 
+# Directory to store output files
+OUTPUT_DIR="output"
+
 # File to store the last execution time
-LAST_EXECUTION_FILE="last_execution_time.txt"
+LAST_EXECUTION_FILE="${OUTPUT_DIR}/last_execution_time.txt"
+
+# Create output directory if it doesn't exist
+mkdir -p "$OUTPUT_DIR"
 
 # Function to download files and compare sizes
 download_and_compare() {
     local name=$1
     local url=$2
-    local new_file="${name}_new.txt"
-    local old_file="${name}.txt"
+    local new_file="${OUTPUT_DIR}/${name}_new.txt"
+    local old_file="${OUTPUT_DIR}/${name}.txt"
 
     echo -e "🚀  Downloading $name..."
     
@@ -54,12 +60,12 @@ download_and_compare() {
 # Function to filter domains
 filter_domains() {
     local domain=$1
-    local output_file="${domain}_subdomains.txt"
+    local output_file="${OUTPUT_DIR}/${domain}_subdomains.txt"
 
     echo -e "🔍  Filtering for domain: $domain..."
     
     # Filtering logic
-    cat *.txt | grep -F "$domain" | awk -F'-- ' '{print $2}' | tr ' ' '\n' | tr '[' ' ' | sed 's/ //g' | sed 's/\]//g' | grep -F "$domain" | sort -u > "$output_file"
+    cat ${OUTPUT_DIR}/*.txt | grep -F "$domain" | awk -F'-- ' '{print $2}' | tr ' ' '\n' | tr '[' ' ' | sed 's/ //g' | sed 's/\]//g' | grep -F "$domain" | sort -u > "$output_file"
     
     local subdomain_count=$(wc -l < "$output_file")
     
