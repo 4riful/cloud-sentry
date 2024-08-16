@@ -8,9 +8,13 @@ echo -e "\033[1;34m
 █▄▄ █▄▄ █▄█ █▄█ █▄▀   ▄█ ██▄ █░▀█ ░█░ █▀▄ ░█░
 \033[0m"
 
-
-echo -e "\033[1;31m A shitty work done by xettabyte 😵\033[0m"
-echo -e "🙌 Special thanks to kaeferjaeger team"
+# Wholesome Acknowledgment
+echo -e "\033[1;31m
+🌟 A shitty work done by xettabyte 😵
+\033[0m"
+echo -e "\033[1;32m
+🙌 Special thanks to the kaeferjaeger team for their amazing collective work and dedication!
+\033[0m"
 
 # Function to download files and compare sizes
 download_and_compare() {
