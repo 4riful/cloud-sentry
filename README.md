@@ -26,7 +26,7 @@ Cloud Sentry currently supports SNI IP ranges from these top cloud providers:
 
 1. **Clone the Repository**:
    ```bash
-   git clone https://github.com/yourusername/cloud-sentry.git
+   git clone https://github.com/4riful/cloud-sentry.git
    cd cloud-sentry
    ```
 
