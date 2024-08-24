@@ -54,7 +54,7 @@ Cloud Sentry currently supports SNI IP ranges from these top cloud providers:
 #### 📄 Example
 
 ```bash
-$ ./cloud-sentry.sh
+$ ./main.sh
 🚀 Downloading amazon...
 ✅ amazon updated (size: 45231 bytes)
 ...
