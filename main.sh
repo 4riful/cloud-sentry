@@ -107,8 +107,8 @@ main() {
         time_diff=$(( (current_time - last_execution_time) / 60 ))
 
         # If less than 5 minutes, skip downloading
-        if [[ $time_diff -lt 5 ]]; then
-            echo -e "⏰ Last execution was less than 5 minutes ago. Skipping download."
+        if [[ $time_diff -lt 10 ]]; then
+            echo -e "⏰ Last execution was less than 10 minutes ago. Skipping download."
             skip_download=true
         else
             skip_download=false
